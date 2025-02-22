@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciar Clientes</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Gerenciar Clientes</h1>
+
+    <!-- Escolha de qual cliente editar -->
+    <label for="clienteSelect">Selecione o cliente:</label>
+    <select id="clienteSelect">
+      <option value="">-- Selecione --</option>
+      <!-- Opções carregadas dinamicamente -->
+    </select>
+
+    <!-- Formulário para editar os dados do cliente selecionado -->
+    <form id="editForm" style="margin-top: 15px;">
+      <input type="hidden" id="editId">
+
+      <label for="editNome">Nome:</label>
+      <input type="text" id="editNome" required>
+
+      <label for="editEmail">Email:</label>
+      <input type="email" id="editEmail" required>
+
+      <label for="editTelefone">Telefone:</label>
+      <input type="tel" id="editTelefone" required>
+
+      <label for="editCpf">CPF:</label>
+      <input type="text" id="editCpf" required>
+
+      <label for="editEndereco">Endereço:</label>
+      <input type="text" id="editEndereco" required>
+
+      <button type="submit">Salvar Alterações</button>
+      <button type="button" class="excluir" id="excluirBtn" style="margin-top: 10px;">Excluir</button>
+    </form>
+
+    <p id="mensagemEdicao"></p>
+    
+    <!-- Botão Voltar -->
+    <button onclick="window.location.href='index.html'" style="margin-top: 10px;">Voltar</button>
+  </div>
+
+  <script>
+    const selectCliente = document.getElementById('clienteSelect');
+    const editForm = document.getElementById('editForm');
+    const editId = document.getElementById('editId');
+    const editNome = document.getElementById('editNome');
+    const editEmail = document.getElementById('editEmail');
+    const editTelefone = document.getElementById('editTelefone');
+    const editCpf = document.getElementById('editCpf');
+    const editEndereco = document.getElementById('editEndereco');
+    const excluirBtn = document.getElementById('excluirBtn');
+    const mensagemEdicao = document.getElementById('mensagemEdicao');
+
+    // Carrega a lista de clientes no select
+    function carregarListaClientes() {
+      fetch('https://x8ki-letl-twmt.n7.xano.io/api:exnafo3B/clientes')
+        .then(response => response.json())
+        .then(lista => {
+          selectCliente.innerHTML = '<option value=\"\">-- Selecione --</option>';
+          lista.forEach(cliente => {
+            const option = document.createElement('option');
+            option.value = cliente.id;
+            option.textContent = cliente.nome;
+            selectCliente.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Erro ao carregar lista de clientes:', error);
+        });
+    }
+
+    // Ao mudar o cliente selecionado no <select>
+    selectCliente.addEventListener('change', () => {
+      const idSelecionado = selectCliente.value;
+      if (!idSelecionado) {
+        limparCampos();
+        return;
+      }
+
+      // Buscar dados do cliente selecionado
+      fetch(`https://x8ki-letl-twmt.n7.xano.io/api:exnafo3B/clientes/${idSelecionado}`)
+        .then(response => response.json())
+        .then(cliente => {
+          editId.value = cliente.id;
+          editNome.value = cliente.nome;
+          editEmail.value = cliente.email;
+          editTelefone.value = cliente.telefone;
+          editCpf.value = cliente.cpf;
+          editEndereco.value = cliente.endereco;
+          mensagemEdicao.textContent = '';
+        })
+        .catch(error => {
+          console.error('Erro ao carregar cliente:', error);
+        });
+    });
+
+    // Salvar alterações (ENVIA PATCH AGORA!)
+    editForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = editId.value;
+      if (!id) {
+        mensagemEdicao.textContent = 'Nenhum cliente selecionado.';
+        return;
+      }
+
+      const corpo = {
+        nome: editNome.value,
+        email: editEmail.value,
+        telefone: editTelefone.value,
+        cpf: editCpf.value,
+        endereco: editEndereco.value
+      };
+
+      // Usar PATCH ao invés de PUT
+      fetch(`https://x8ki-letl-twmt.n7.xano.io/api:exnafo3B/clientes/${id}`, {
+        method: 'PATCH', // <---- AQUI O SEGREDO
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(corpo)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro ao salvar alterações: ${response.status}`);
+        }
+        mensagemEdicao.style.color = 'green';
+        mensagemEdicao.textContent = 'Cliente atualizado com sucesso!';
+        carregarListaClientes();
+      })
+      .catch(error => {
+        mensagemEdicao.style.color = 'red';
+        mensagemEdicao.textContent = 'Erro ao salvar alterações.';
+        console.error('Erro ao editar cliente:', error);
+      });
+    });
+
+    // Excluir cliente
+    excluirBtn.addEventListener('click', () => {
+      const id = editId.value;
+      if (!id) {
+        mensagemEdicao.textContent = 'Nenhum cliente selecionado.';
+        return;
+      }
+
+      if (!confirm('Tem certeza que deseja excluir este cliente?')) {
+        return;
+      }
+
+      fetch(`https://x8ki-letl-twmt.n7.xano.io/api:exnafo3B/clientes/${id}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro ao excluir: ${response.status}`);
+        }
+        mensagemEdicao.style.color = 'green';
+        mensagemEdicao.textContent = 'Cliente excluído com sucesso!';
+        carregarListaClientes();
+        limparCampos();
+      })
+      .catch(error => {
+        mensagemEdicao.style.color = 'red';
+        mensagemEdicao.textContent = 'Erro ao excluir cliente.';
+        console.error('Erro ao excluir cliente:', error);
+      });
+    });
+
+    // Limpa campos
+    function limparCampos() {
+      editId.value = '';
+      editNome.value = '';
+      editEmail.value = '';
+      editTelefone.value = '';
+      editCpf.value = '';
+      editEndereco.value = '';
+      mensagemEdicao.textContent = '';
+    }
+
+    // Ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarListaClientes();
+    });
+  </script>
+</body>
+</html>
