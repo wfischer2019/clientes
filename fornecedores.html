@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Fornecedores</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Cadastro de Fornecedores</h1>
+    <form id="cadastroForm">
+      <label for="razao_social">Razão Social:</label>
+      <input type="text" id="razao_social" name="razao_social" required>
+
+      <label for="telefone">Telefone:</label>
+      <input type="tel" id="telefone" name="telefone" placeholder="(99) 99999-9999" required>
+
+      <label for="whatsapp">WhatsApp:</label>
+      <input type="tel" id="whatsapp" name="whatsapp" placeholder="(99) 99999-9999" required>
+
+      <label for="email">Email:</label>
+      <input type="email" id="email" name="email" required>
+
+      <label for="endereco">Endereço:</label>
+      <input type="text" id="endereco" name="endereco" required>
+
+      <label for="atividade">Atividade:</label>
+      <input type="text" id="atividade" name="atividade" placeholder="Ramo/Atividade" required>
+
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <!-- Botão Gerenciar -->
+    <button class="gerenciar" id="gerenciarBtn">Gerenciar Fornecedores</button>
+
+    <!-- Botão Voltar ao Menu -->
+    <button id="voltarMenu">Voltar ao Menu</button>
+
+    <p id="mensagem"></p>
+  </div>
+
+  <script>
+    // CADASTRO DE FORNECEDORES
+    document.getElementById('cadastroForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      const razao_social = document.getElementById('razao_social').value;
+      const telefone = document.getElementById('telefone').value;
+      const whatsapp = document.getElementById('whatsapp').value;
+      const email = document.getElementById('email').value;
+      const endereco = document.getElementById('endereco').value;
+      const atividade = document.getElementById('atividade').value;
+
+      fetch('https://x8ki-letl-twmt.n7.xano.io/api:I_LkDG6f/fornecedores', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razao_social,
+          telefone,
+          whatsapp,
+          email,
+          endereco,
+          atividade
+        })
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Erro: ' + response.status + ' - ' + response.statusText);
+        }
+        return response.json();
+      })
+      .then(data => {
+        document.getElementById('mensagem').innerText = `Fornecedor ${razao_social} cadastrado com sucesso!`;
+        this.reset(); // Limpar formulário
+      })
+      .catch(error => {
+        document.getElementById('mensagem').innerText = 'Erro ao cadastrar. Tente novamente.';
+        console.error('Erro detalhado:', error);
+      });
+    });
+
+    // BOTÃO GERENCIAR
+    document.getElementById('gerenciarBtn').addEventListener('click', () => {
+      window.location.href = 'gerenciar_fornecedores.html';
+    });
+
+    // BOTÃO VOLTAR AO MENU
+    document.getElementById('voltarMenu').addEventListener('click', () => {
+      window.location.href = 'index.html'; // Ajuste se seu menu tiver outro nome
+    });
+
+    // Máscara TELEFONE
+    document.getElementById('telefone').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length > 6) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+      } else if (value.length > 2) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+      } else if (value.length > 0) {
+        value = `(${value}`;
+      }
+      e.target.value = value;
+    });
+
+    // Máscara WHATSAPP (igual telefone)
+    document.getElementById('whatsapp').addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length > 6) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+      } else if (value.length > 2) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+      } else if (value.length > 0) {
+        value = `(${value}`;
+      }
+      e.target.value = value;
+    });
+  </script>
+</body>
+</html>

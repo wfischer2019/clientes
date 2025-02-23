@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tela Principal - APP Molduras</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>APP Molduras</h1>
+    
+    <!-- Botão para Cadastro de Clientes -->
+    <button id="btnClientes">Cadastro de Clientes</button>
+
+    <!-- Botão para Cadastro de Fornecedores -->
+    <button id="btnFornecedores">Cadastro de Fornecedores</button>
+  </div>
+
+  <script>
+    // Ação do botão de Clientes
+    document.getElementById('btnClientes').addEventListener('click', () => {
+      // Ajuste conforme seu arquivo de clientes (ex.: clientes.html)
+      window.location.href = 'clientes.html'; 
+    });
+
+    // Ação do botão de Fornecedores
+    document.getElementById('btnFornecedores').addEventListener('click', () => {
+      // Vai para a nova página fornecedores.html
+      window.location.href = 'fornecedores.html';
+    });
+  </script>
+</body>
+</html>

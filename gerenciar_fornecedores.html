@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerenciar Fornecedores</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>Gerenciar Fornecedores</h1>
+
+    <label for="fornecedorSelect">Selecione o fornecedor:</label>
+    <select id="fornecedorSelect">
+      <option value="">-- Selecione --</option>
+    </select>
+
+    <!-- Formulário para editar/excluir fornecedor -->
+    <form id="editForm" style="margin-top: 15px;">
+      <input type="hidden" id="editId">
+
+      <label for="editRazaoSocial">Razão Social:</label>
+      <input type="text" id="editRazaoSocial" required>
+
+      <label for="editTelefone">Telefone:</label>
+      <input type="tel" id="editTelefone" required>
+
+      <label for="editWhatsapp">WhatsApp:</label>
+      <input type="tel" id="editWhatsapp" required>
+
+      <label for="editEmail">Email:</label>
+      <input type="email" id="editEmail" required>
+
+      <label for="editEndereco">Endereço:</label>
+      <input type="text" id="editEndereco" required>
+
+      <label for="editAtividade">Atividade:</label>
+      <input type="text" id="editAtividade" required>
+
+      <button type="submit">Salvar Alterações</button>
+      <button type="button" class="excluir" id="excluirBtn" style="margin-top: 10px;">Excluir</button>
+    </form>
+
+    <p id="mensagemEdicao"></p>
+
+    <!-- Botão Voltar para o menu (index.html) -->
+    <button onclick="window.location.href='index.html'" style="margin-top: 10px;">Voltar</button>
+  </div>
+
+  <script>
+    const fornecedorSelect = document.getElementById('fornecedorSelect');
+    const editForm = document.getElementById('editForm');
+
+    const editId = document.getElementById('editId');
+    const editRazaoSocial = document.getElementById('editRazaoSocial');
+    const editTelefone = document.getElementById('editTelefone');
+    const editWhatsapp = document.getElementById('editWhatsapp');
+    const editEmail = document.getElementById('editEmail');
+    const editEndereco = document.getElementById('editEndereco');
+    const editAtividade = document.getElementById('editAtividade');
+
+    const excluirBtn = document.getElementById('excluirBtn');
+    const mensagemEdicao = document.getElementById('mensagemEdicao');
+
+    // Carregar lista de fornecedores no select
+    function carregarListaFornecedores() {
+      fetch('https://x8ki-letl-twmt.n7.xano.io/api:I_LkDG6f/fornecedores')
+        .then(response => response.json())
+        .then(lista => {
+          // Limpar o select
+          fornecedorSelect.innerHTML = '<option value=\"\">-- Selecione --</option>';
+
+          // Preencher opções com os fornecedores
+          lista.forEach(fornecedor => {
+            const option = document.createElement('option');
+            option.value = fornecedor.id;
+            option.textContent = fornecedor.razao_social;
+            fornecedorSelect.appendChild(option);
+          });
+        })
+        .catch(error => {
+          console.error('Erro ao carregar lista de fornecedores:', error);
+        });
+    }
+
+    // Ao mudar o select, buscar dados do fornecedor selecionado
+    fornecedorSelect.addEventListener('change', () => {
+      const idSelecionado = fornecedorSelect.value;
+      if (!idSelecionado) {
+        limparCampos();
+        return;
+      }
+
+      fetch(`https://x8ki-letl-twmt.n7.xano.io/api:I_LkDG6f/fornecedores/${idSelecionado}`)
+        .then(response => response.json())
+        .then(fornecedor => {
+          editId.value = fornecedor.id;
+          editRazaoSocial.value = fornecedor.razao_social;
+          editTelefone.value = fornecedor.telefone;
+          editWhatsapp.value = fornecedor.whatsapp;
+          editEmail.value = fornecedor.email;
+          editEndereco.value = fornecedor.endereco;
+          editAtividade.value = fornecedor.atividade;
+          mensagemEdicao.textContent = '';
+        })
+        .catch(error => {
+          console.error('Erro ao carregar fornecedor:', error);
+        });
+    });
+
+    // Salvar alterações (PATCH)
+    editForm.addEventListener('submit', e => {
+      e.preventDefault();
+      const id = editId.value;
+      if (!id) {
+        mensagemEdicao.textContent = 'Nenhum fornecedor selecionado.';
+        return;
+      }
+
+      const corpo = {
+        razao_social: editRazaoSocial.value,
+        telefone: editTelefone.value,
+        whatsapp: editWhatsapp.value,
+        email: editEmail.value,
+        endereco: editEndereco.value,
+        atividade: editAtividade.value
+      };
+
+      fetch(`https://x8ki-letl-twmt.n7.xano.io/api:I_LkDG6f/fornecedores/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(corpo)
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro ao salvar alterações: ${response.status}`);
+        }
+        mensagemEdicao.style.color = 'green';
+        mensagemEdicao.textContent = 'Fornecedor atualizado com sucesso!';
+        carregarListaFornecedores(); // Recarrega a lista p/ ver mudanças
+      })
+      .catch(error => {
+        mensagemEdicao.style.color = 'red';
+        mensagemEdicao.textContent = 'Erro ao salvar alterações.';
+        console.error('Erro ao editar fornecedor:', error);
+      });
+    });
+
+    // Excluir fornecedor
+    excluirBtn.addEventListener('click', () => {
+      const id = editId.value;
+      if (!id) {
+        mensagemEdicao.textContent = 'Nenhum fornecedor selecionado.';
+        return;
+      }
+
+      if (!confirm('Tem certeza que deseja excluir este fornecedor?')) {
+        return;
+      }
+
+      fetch(`https://x8ki-letl-twmt.n7.xano.io/api:I_LkDG6f/fornecedores/${id}`, {
+        method: 'DELETE'
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(`Erro ao excluir fornecedor: ${response.status}`);
+        }
+        mensagemEdicao.style.color = 'green';
+        mensagemEdicao.textContent = 'Fornecedor excluído com sucesso!';
+        carregarListaFornecedores();
+        limparCampos();
+      })
+      .catch(error => {
+        mensagemEdicao.style.color = 'red';
+        mensagemEdicao.textContent = 'Erro ao excluir fornecedor.';
+        console.error('Erro ao excluir fornecedor:', error);
+      });
+    });
+
+    // Máscaras para Telefone e WhatsApp
+    editTelefone.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length > 6) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+      } else if (value.length > 2) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+      } else if (value.length > 0) {
+        value = `(${value}`;
+      }
+      e.target.value = value;
+    });
+
+    editWhatsapp.addEventListener('input', function(e) {
+      let value = e.target.value.replace(/\D/g, '');
+      if (value.length > 11) value = value.slice(0, 11);
+      if (value.length > 6) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2, 7)}-${value.slice(7)}`;
+      } else if (value.length > 2) {
+        value = `(${value.slice(0, 2)}) ${value.slice(2)}`;
+      } else if (value.length > 0) {
+        value = `(${value}`;
+      }
+      e.target.value = value;
+    });
+
+    // Limpar campos
+    function limparCampos() {
+      editId.value = '';
+      editRazaoSocial.value = '';
+      editTelefone.value = '';
+      editWhatsapp.value = '';
+      editEmail.value = '';
+      editEndereco.value = '';
+      editAtividade.value = '';
+      mensagemEdicao.textContent = '';
+    }
+
+    // Ao carregar a página
+    document.addEventListener('DOMContentLoaded', () => {
+      carregarListaFornecedores();
+    });
+  </script>
+</body>
+</html>
