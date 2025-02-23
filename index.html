@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tela Principal - APP Molduras</title>
   <link rel="stylesheet" href="styles.css">
+  <script>
+    // Verifica se existe um token no localStorage
+    if (!localStorage.getItem('token')) {
+      // Se não houver token, redireciona para a tela de login
+      window.location.href = 'login.html';
+    }
+  </script>
 </head>
 <body>
   <div class="container">
@@ -20,13 +27,11 @@
   <script>
     // Ação do botão de Clientes
     document.getElementById('btnClientes').addEventListener('click', () => {
-      // Ajuste conforme seu arquivo de clientes (ex.: clientes.html)
       window.location.href = 'clientes.html'; 
     });
 
     // Ação do botão de Fornecedores
     document.getElementById('btnFornecedores').addEventListener('click', () => {
-      // Vai para a nova página fornecedores.html
       window.location.href = 'fornecedores.html';
     });
   </script>
